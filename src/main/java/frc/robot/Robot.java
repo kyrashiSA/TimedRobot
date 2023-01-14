@@ -13,11 +13,14 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -29,25 +32,37 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends TimedRobot {
   Joystick joy = new Joystick(0);
+  //XboxController xbox = new XboxController(1);
 
-  CANSparkMax leftMotor1 = new CANSparkMax(0, MotorType.kBrushed);
-  CANSparkMax leftMotor2 = new CANSparkMax(1, MotorType.kBrushed);
-  CANSparkMax rightMotor1 = new CANSparkMax(2, MotorType.kBrushed);
-  CANSparkMax rightMotor2 = new CANSparkMax(3, MotorType.kBrushed);
+  //arcade drive
+  // CANSparkMax leftMotor1 = new CANSparkMax(0, MotorType.kBrushed);
+  // CANSparkMax leftMotor2 = new CANSparkMax(1, MotorType.kBrushed);
+  // CANSparkMax rightMotor1 = new CANSparkMax(2, MotorType.kBrushed);
+  // CANSparkMax rightMotor2 = new CANSparkMax(3, MotorType.kBrushed);
 
-  MotorControllerGroup leftMotors = new MotorControllerGroup(leftMotor1, leftMotor2);
-  MotorControllerGroup rightMotors = new MotorControllerGroup(rightMotor1, rightMotor2);
+  // MotorControllerGroup leftMotors = new MotorControllerGroup(leftMotor1, leftMotor2);
+  // MotorControllerGroup rightMotors = new MotorControllerGroup(rightMotor1, rightMotor2);
+
+  VictorSP leftMotor1 = new VictorSP(0);
+  VictorSP leftMotor2 = new VictorSP(1);
+  VictorSP leftMotor3 = new VictorSP(2);
+
+  VictorSP rightMotor1 = new VictorSP(3);
+  VictorSP rightMotor2 = new VictorSP(4);
+  VictorSP rightMotor3 = new VictorSP(5);
+
+  MotorControllerGroup leftMotors = new MotorControllerGroup(leftMotor1, leftMotor2, leftMotor3);
+  MotorControllerGroup rightMotors = new MotorControllerGroup(rightMotor1, rightMotor2, rightMotor3);
 
   DifferentialDrive drive = new DifferentialDrive(leftMotors, rightMotors);
 
+  //pid
   // Encoder encoder = new Encoder(0, 1);
   // PIDController pid = new PIDController(0.15, 0.01, 0);
 
-  //encoder
-  // Joystick joy = new Joystick(0);
-  // Compressor phCompressor = new Compressor(1, PneumaticsModuleType.REVPH);
-  // DoubleSolenoid solenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 1, 2);
-  
+  //pneumatics
+  Compressor phCompressor = new Compressor(1, PneumaticsModuleType.REVPH);
+  DoubleSolenoid solenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, 0, 1);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -55,7 +70,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    //solenoid.set(Value.kReverse);
   }
 
   /**
@@ -67,9 +81,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // if (joy.getRawButtonPressed(1)) {
-    //   solenoid.toggle();
-    // }
+
   }
 
   /**
@@ -91,40 +103,59 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     // double currentPos = encoder.getDistance();
-    // double speed = pid.calculate(currentPos, 3);
-
+    // double speed = pid.calculate(currentPos * k_Tick2Feet, 3);
     // drive.arcadeDrive(speed, -speed);
-   }
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
     drive.setSafetyEnabled(false);
+    phCompressor.disable();
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    double speed = joy.getRawAxis(0);
-    double turn = joy.getRawAxis(5);
-    
-    drive.arcadeDrive(speed, turn);
+    drive.arcadeDrive(-joy.getRawAxis(1), joy.getRawAxis(0));
+
+    if (joy.getRawButtonPressed(1)) {
+      solenoid.toggle();
+    }
+
+    // if (joy.getRawButton(0)) {
+    //   solenoid.set(Value.kForward);
+    // } else if (joy.getRawButton(1)) {
+    //   solenoid.set(Value.kReverse);
+    // }
+
+    if (joy.getRawButtonPressed(2)) {
+      phCompressor.enableDigital();
+    } else if (joy.getRawButtonPressed(3)) {
+      phCompressor.disable();
+    }
 
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+  }
 
   /** This function is called once when test mode is enabled. */
   @Override
-  public void testInit() {}
+  public void testInit() {
+  }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+  }
+
 }
+

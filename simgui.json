@@ -21,6 +21,11 @@
           "open": true
         }
       }
+    },
+    "PWM Outputs": {
+      "window": {
+        "visible": true
+      }
     }
   },
   "NTProvider": {
@@ -32,6 +37,12 @@
   "NetworkTables": {
     "LiveWindow": {
       "Ungrouped": {
+        "Compressor[1]": {
+          "open": true
+        },
+        "DoubleSolenoid[1,0]": {
+          "open": true
+        },
         "open": true
       },
       "open": true
